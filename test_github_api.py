@@ -4,12 +4,13 @@ import requests
 import random
 from abs_class import GitHubAPITest
 
-
 num = random.randint(100, 999)
+logging.basicConfig()
+logging.root.setLevel(logging.NOTSET)
 
 class TestGitHubAPI(GitHubAPITest):
     def test_authorization(self):
-        logging.info("Running test_authorization...")
+        logging.info("Running test_authorization")
         response = requests.get(self.base_url, headers=self.headers)
         print(response.status_code)
         assert response.status_code == 200
@@ -17,7 +18,7 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_get_all_repositories(self):
-        logging.info("Running test_get_all_repositories...")
+        logging.info("Running test_get_all_repositories")
         url = self.base_url + "user/repos"
         response = requests.get(url, headers=self.headers)
         print(response.status_code)
@@ -26,7 +27,7 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_get_all_branches(self):
-        logging.info("Running test_get_all_branches...")
+        logging.info("Running test_get_all_branches")
         url = self.base_url + f"repos/{self.repo_name}/branches"
         response = requests.get(url, headers=self.headers)
         print(response.status_code)
@@ -35,7 +36,7 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_get_pull_requests(self):
-        logging.info("Running test_get_pull_requests...")
+        logging.info("Running test_get_pull_requests")
         url = self.base_url + f"repos/{self.repo_name}/pulls"
         response = requests.get(url, headers=self.headers)
         print(response.status_code)
@@ -44,8 +45,8 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_create_pull_request(self):
-        logging.info("Running test_create_pull_request...")
-        # Create a new branch
+        logging.info("Running test_create_pull_request")
+          # Create a new branch
         branch_name = "test-branch-"+str(num)
         url = self.base_url + f"repos/{self.repo_name}/git/refs"
         response = requests.get(url, headers=self.headers)
@@ -58,7 +59,7 @@ class TestGitHubAPI(GitHubAPITest):
         response = requests.post(url, headers=self.headers, json=payload)
         assert response.status_code == 201
 
-        # Create a new file in the new branch
+          # Create a new file in the new branch
         url = self.base_url + f"repos/{self.repo_name}/contents/new_file.py"
         payload = {
             "message": "Create new_file.py",
@@ -69,7 +70,7 @@ class TestGitHubAPI(GitHubAPITest):
         print(response.status_code)
         assert response.status_code == 201
 
-        # Create a pull request for the new branch
+          # Create a pull request for the new branch
         url = self.base_url + f"repos/{self.repo_name}/pulls"
         payload = {
             "title": "Test Pull Request",
@@ -82,7 +83,7 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_delete_pull_request(self):
-        logging.info("Running test_delete_pull_request...")
+        logging.info("Running test_delete_pull_request")
         url = self.base_url + f"repos/{self.repo_name}/pulls"
         payload = {
             "title": "Test Pull Request",
@@ -90,7 +91,6 @@ class TestGitHubAPI(GitHubAPITest):
             "base": "main"
         }
         response = requests.get(url, headers=self.headers)
-
         data = response.json()
         for pr in data:
             if pr["title"] == payload["title"] and pr["state"] == "open":
@@ -108,14 +108,13 @@ class TestGitHubAPI(GitHubAPITest):
 
 
     def test_merge_pull_request(self):
+        logging.info("Running test_approve_pull_request")
         url = self.base_url + f"repos/{self.repo_name}/pulls"
         response = requests.get(url, headers=self.headers)
         data = response.json()
         for pr in data:
             if pr["head"]["ref"] == "test-branch-"+str(num):
                 pr_number = pr["number"]
-
-                logging.info("Running test_approve_pull_request...")
                 review_url = self.base_url + f"repos/{self.repo_name}/pulls/{pr_number}/merge" 
                 review_payload = {
                     "commit_title": "Merge pull request",
@@ -127,14 +126,11 @@ class TestGitHubAPI(GitHubAPITest):
                 logging.info("test_approve_pull_request passed!")
 
 
-
 test_api = TestGitHubAPI()
 test_api.test_authorization()
 test_api.test_get_all_repositories()
 test_api.test_get_all_branches()
 test_api.test_get_pull_requests()
-
-
 test_api.test_create_pull_request() 
 test_api.test_delete_pull_request() 
 test_api.test_merge_pull_request()
